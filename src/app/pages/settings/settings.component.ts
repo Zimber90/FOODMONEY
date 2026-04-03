@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
+import { LucideAngularModule, ChevronLeft, Info, ShieldCheck, Code2 } from 'lucide-angular';
 import { ThemeService, ThemeType } from '../../services/theme.service';
 import { CalendarSettingsService } from '../../services/calendar-settings.service';
 
@@ -85,9 +85,41 @@ import { CalendarSettingsService } from '../../services/calendar-settings.servic
           <span>Altro</span>
         </div>
         
-        <div class="setting-item">
-          <div class="circle purple"></div>
-          <span>Info app</span>
+        <!-- Sezione Info App -->
+        <div class="menu-group">
+          <div class="setting-item" (click)="toggleMenu('info')">
+            <div class="circle purple"></div>
+            <span>Info app</span>
+          </div>
+
+          @if (openMenu === 'info') {
+            <div class="dropdown info-content">
+              <div class="info-header">
+                <div class="app-icon">
+                  <lucide-icon [name]="infoIcon" size="32"></lucide-icon>
+                </div>
+                <div class="app-details">
+                  <h3>Il Mio Spazio</h3>
+                  <p>Versione 1.0.0</p>
+                </div>
+              </div>
+              
+              <div class="info-section">
+                <div class="info-row">
+                  <lucide-icon [name]="shieldIcon" size="18"></lucide-icon>
+                  <p>I tuoi dati sono salvati localmente e non lasciano mai il dispositivo.</p>
+                </div>
+                <div class="info-row">
+                  <lucide-icon [name]="codeIcon" size="18"></lucide-icon>
+                  <p>Sviluppato con Angular 17 e Lucide Icons.</p>
+                </div>
+              </div>
+
+              <div class="info-footer">
+                <p>© 2024 Dyad AI. Tutti i diritti riservati.</p>
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
@@ -241,6 +273,64 @@ import { CalendarSettingsService } from '../../services/calendar-settings.servic
       transform: scale(1.1);
     }
 
+    /* Info Styles */
+    .info-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-color);
+      opacity: 0.9;
+    }
+
+    .app-icon {
+      background: var(--header-bg);
+      color: var(--header-text);
+      padding: 10px;
+      border-radius: 12px;
+    }
+
+    .app-details h3 {
+      margin: 0;
+      font-size: 1.1rem;
+      color: var(--text-color);
+    }
+
+    .app-details p {
+      margin: 0;
+      font-size: 0.85rem;
+      opacity: 0.7;
+      color: var(--text-color);
+    }
+
+    .info-section {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      padding: 10px 0;
+    }
+
+    .info-row {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .info-row p {
+      margin: 0;
+      font-size: 0.9rem;
+      line-height: 1.4;
+      color: var(--text-color);
+    }
+
+    .info-footer {
+      text-align: center;
+      padding-top: 10px;
+      font-size: 0.75rem;
+      opacity: 0.5;
+      color: var(--text-color);
+    }
+
     @keyframes slideDown {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -252,7 +342,11 @@ export class SettingsComponent {
   private calendarService = inject(CalendarSettingsService);
   
   readonly backIcon = ChevronLeft;
-  openMenu: 'theme' | 'calendar' | null = null;
+  readonly infoIcon = Info;
+  readonly shieldIcon = ShieldCheck;
+  readonly codeIcon = Code2;
+
+  openMenu: 'theme' | 'calendar' | 'info' | null = null;
   
   highlightColors = ['#6366f1', '#ef4444', '#10b981', '#f59e0b', '#ec4899'];
 
@@ -260,7 +354,7 @@ export class SettingsComponent {
     return this.calendarService.getSettings();
   }
 
-  toggleMenu(menu: 'theme' | 'calendar') {
+  toggleMenu(menu: 'theme' | 'calendar' | 'info') {
     this.openMenu = this.openMenu === menu ? null : menu;
   }
 
