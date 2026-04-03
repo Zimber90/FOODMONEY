@@ -1,7 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
+import { ThemeService, ThemeType } from '../../services/theme.service';
 
 @Component({
   selector: 'app-settings',
@@ -17,9 +18,22 @@ import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
       </header>
 
       <div class="settings-list">
-        <div class="setting-item">
-          <div class="circle blue"></div>
-          <span>Tema</span>
+        <!-- Sezione Tema -->
+        <div class="menu-group">
+          <div class="setting-item" (click)="toggleThemeMenu()">
+            <div class="circle blue"></div>
+            <span>Tema</span>
+          </div>
+          
+          @if (isThemeMenuOpen) {
+            <div class="theme-dropdown">
+              <div class="theme-option" (click)="selectTheme('light')">Light</div>
+              <div class="theme-option" (click)="selectTheme('dark')">Dark</div>
+              <div class="theme-option" (click)="selectTheme('orange')">Orange</div>
+              <div class="theme-option" (click)="selectTheme('green')">Green</div>
+              <div class="theme-option" (click)="selectTheme('purple')">Purple</div>
+            </div>
+          }
         </div>
         
         <div class="setting-item">
@@ -42,8 +56,9 @@ import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
   styles: [`
     .settings-container {
       height: 100vh;
-      background-color: #ffffff;
+      background-color: var(--bg-color, #ffffff);
       padding: 20px;
+      transition: background-color 0.3s ease;
     }
 
     .settings-header {
@@ -74,7 +89,7 @@ import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
       font-size: 1.4rem;
       font-weight: 800;
       margin: 0;
-      margin-right: 34px; /* Compensa la larghezza del tasto back per centrare il testo */
+      margin-right: 34px;
     }
 
     .settings-list {
@@ -82,6 +97,12 @@ import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
       flex-direction: column;
       gap: 25px;
       padding-left: 10px;
+    }
+
+    .menu-group {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
     }
 
     .setting-item {
@@ -99,7 +120,7 @@ import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
     .setting-item span {
       font-size: 1.1rem;
       font-weight: 700;
-      color: #000;
+      color: var(--text-color, #000);
     }
 
     .circle {
@@ -112,8 +133,47 @@ import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
     .circle.teal { background-color: #14918b; }
     .circle.green { background-color: #b8d0a0; }
     .circle.purple { background-color: #c596c5; }
+
+    .theme-dropdown {
+      margin-left: 10px;
+      margin-right: 10px;
+      border: 3px solid #5d7a99;
+      border-radius: 15px;
+      padding: 15px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      animation: slideDown 0.2s ease-out;
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .theme-option {
+      font-size: 1rem;
+      font-weight: 700;
+      color: #000;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+
+    .theme-option:active {
+      opacity: 0.5;
+    }
   `]
 })
 export class SettingsComponent {
+  private themeService = inject(ThemeService);
   readonly backIcon = ChevronLeft;
+  isThemeMenuOpen = false;
+
+  toggleThemeMenu() {
+    this.isThemeMenuOpen = !this.isThemeMenuOpen;
+  }
+
+  selectTheme(theme: ThemeType) {
+    this.themeService.setTheme(theme);
+  }
 }

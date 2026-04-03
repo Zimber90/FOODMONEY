@@ -1,5 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
 
+:root {
+  --bg-color: #ffffff;
+  --text-color: #000000;
+}
+
+[data-theme='dark'] {
+  --bg-color: #1a1a1a;
+  --text-color: #ffffff;
+}
+
+[data-theme='orange'] {
+  --bg-color: #fff5eb;
+  --text-color: #d97706;
+}
+
+[data-theme='green'] {
+  --bg-color: #f0fdf4;
+  --text-color: #15803d;
+}
+
+[data-theme='purple'] {
+  --bg-color: #faf5ff;
+  --text-color: #7e22ce;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -9,9 +34,10 @@
 
 body {
   font-family: 'Plus Jakarta Sans', sans-serif;
-  background-color: #fcfcfc;
-  color: #1a1a1a;
+  background-color: var(--bg-color);
+  color: var(--text-color);
   overflow-x: hidden;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 button {
