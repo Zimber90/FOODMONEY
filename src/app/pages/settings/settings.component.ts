@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { LucideAngularModule, ChevronLeft } from 'lucide-angular';
 import { ThemeService, ThemeType } from '../../services/theme.service';
+import { CalendarSettingsService } from '../../services/calendar-settings.service';
 
 @Component({
   selector: 'app-settings',
@@ -18,14 +19,15 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
       </header>
 
       <div class="settings-list">
+        <!-- Sezione Tema -->
         <div class="menu-group">
-          <div class="setting-item" (click)="toggleThemeMenu()">
+          <div class="setting-item" (click)="toggleMenu('theme')">
             <div class="circle blue"></div>
             <span>Tema</span>
           </div>
           
-          @if (isThemeMenuOpen) {
-            <div class="theme-dropdown">
+          @if (openMenu === 'theme') {
+            <div class="dropdown">
               <div class="theme-option" (click)="selectTheme('light')">Light</div>
               <div class="theme-option" (click)="selectTheme('dark')">Dark</div>
               <div class="theme-option" (click)="selectTheme('orange')">Orange</div>
@@ -35,9 +37,47 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
           }
         </div>
         
-        <div class="setting-item">
-          <div class="circle teal"></div>
-          <span>Impostazione calendario</span>
+        <!-- Sezione Calendario -->
+        <div class="menu-group">
+          <div class="setting-item" (click)="toggleMenu('calendar')">
+            <div class="circle teal"></div>
+            <span>Impostazione calendario</span>
+          </div>
+          
+          @if (openMenu === 'calendar') {
+            <div class="dropdown calendar-options">
+              <div class="option-row">
+                <label>Grandezza numeri</label>
+                <div class="btn-group">
+                  <button (click)="updateCal('fontSize', 'small')" [class.active]="calSettings.fontSize === 'small'">A</button>
+                  <button (click)="updateCal('fontSize', 'medium')" [class.active]="calSettings.fontSize === 'medium'">A+</button>
+                  <button (click)="updateCal('fontSize', 'large')" [class.active]="calSettings.fontSize === 'large'">A++</button>
+                </div>
+              </div>
+
+              <div class="option-row">
+                <label>Colore evidenziatore</label>
+                <div class="color-group">
+                  @for (color of highlightColors; track color) {
+                    <div 
+                      class="color-pick" 
+                      [style.backgroundColor]="color"
+                      [class.selected]="calSettings.highlightColor === color"
+                      (click)="updateCal('highlightColor', color)">
+                    </div>
+                  }
+                </div>
+              </div>
+
+              <div class="option-row">
+                <label>Stile angoli</label>
+                <div class="btn-group">
+                  <button (click)="updateCal('borderRadius', '0px')" [class.active]="calSettings.borderRadius === '0px'">Squadrati</button>
+                  <button (click)="updateCal('borderRadius', '20px')" [class.active]="calSettings.borderRadius === '20px'">Arrotondati</button>
+                </div>
+              </div>
+            </div>
+          }
         </div>
         
         <div class="setting-item">
@@ -69,7 +109,6 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
       color: var(--header-text);
       margin-bottom: 40px;
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      transition: background-color 0.3s ease;
     }
 
     .back-btn {
@@ -110,7 +149,6 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
       font-size: 1.1rem;
       font-weight: 700;
       color: var(--text-color);
-      transition: color 0.3s ease;
     }
 
     .circle {
@@ -125,7 +163,7 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
     .circle.green { background-color: #b8d0a0; }
     .circle.purple { background-color: #c596c5; }
 
-    .theme-dropdown {
+    .dropdown {
       margin-top: 15px;
       margin-left: 10px;
       margin-right: 10px;
@@ -134,7 +172,7 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
       padding: 15px;
       display: flex;
       flex-direction: column;
-      gap: 8px;
+      gap: 12px;
       animation: slideDown 0.2s ease-out;
     }
 
@@ -146,6 +184,63 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
       padding: 4px 0;
     }
 
+    .calendar-options {
+      gap: 20px;
+    }
+
+    .option-row {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-row label {
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-color);
+      opacity: 0.8;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-group button {
+      flex: 1;
+      padding: 8px;
+      border: 2px solid var(--border-color);
+      background: transparent;
+      color: var(--text-color);
+      border-radius: 10px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .btn-group button.active {
+      background: var(--header-bg);
+      color: var(--header-text);
+      border-color: var(--header-bg);
+    }
+
+    .color-group {
+      display: flex;
+      gap: 12px;
+    }
+
+    .color-pick {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      cursor: pointer;
+      border: 2px solid transparent;
+    }
+
+    .color-pick.selected {
+      border-color: var(--text-color);
+      transform: scale(1.1);
+    }
+
     @keyframes slideDown {
       from { opacity: 0; transform: translateY(-10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -154,14 +249,26 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
 })
 export class SettingsComponent {
   private themeService = inject(ThemeService);
+  private calendarService = inject(CalendarSettingsService);
+  
   readonly backIcon = ChevronLeft;
-  isThemeMenuOpen = false;
+  openMenu: 'theme' | 'calendar' | null = null;
+  
+  highlightColors = ['#6366f1', '#ef4444', '#10b981', '#f59e0b', '#ec4899'];
 
-  toggleThemeMenu() {
-    this.isThemeMenuOpen = !this.isThemeMenuOpen;
+  get calSettings() {
+    return this.calendarService.getSettings();
+  }
+
+  toggleMenu(menu: 'theme' | 'calendar') {
+    this.openMenu = this.openMenu === menu ? null : menu;
   }
 
   selectTheme(theme: ThemeType) {
     this.themeService.setTheme(theme);
+  }
+
+  updateCal(key: any, value: any) {
+    this.calendarService.updateSetting(key, value);
   }
 }
