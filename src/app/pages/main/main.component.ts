@@ -1,13 +1,17 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { LucideAngularModule, ArrowLeft, Menu, X } from 'lucide-angular';
+import { FormsModule } from '@angular/forms';
+import { LucideAngularModule, ArrowLeft, Menu, X, Plus } from 'lucide-angular';
 import { CalendarComponent } from '../../components/calendar/calendar.component';
+import { NoteCardComponent } from '../../components/note-card/note-card.component';
+import { StorageService } from '../../services/storage.service';
+import { Note } from '../../models/note.model';
 
 @Component({
   selector: 'app-main',
   standalone: true,
-  imports: [CommonModule, RouterModule, LucideAngularModule, CalendarComponent],
+  imports: [CommonModule, RouterModule, FormsModule, LucideAngularModule, CalendarComponent, NoteCardComponent],
   template: `
     <div class="page-container">
       <!-- Sidebar -->
@@ -40,11 +44,40 @@ import { CalendarComponent } from '../../components/calendar/calendar.component'
         </header>
 
         <div class="content-body">
-          <app-calendar></app-calendar>
+          <section class="calendar-section">
+            <app-calendar></app-calendar>
+          </section>
           
-          <div class="quick-actions">
-            <p class="hint">Seleziona un giorno per aggiungere una nota o visualizzare gli eventi.</p>
-          </div>
+          <section class="notes-section">
+            <div class="section-header">
+              <h2>Le Mie Note</h2>
+              <button class="add-btn" (click)="showForm = !showForm" [class.active]="showForm">
+                <lucide-icon [name]="plusIcon" size="20"></lucide-icon>
+                {{ showForm ? 'Chiudi' : 'Aggiungi Nota' }}
+              </button>
+            </div>
+
+            @if (showForm) {
+              <div class="note-form card-animation">
+                <input [(ngModel)]="newTitle" placeholder="Titolo della nota..." class="form-input title-input">
+                <textarea [(ngModel)]="newContent" placeholder="Scrivi qui i tuoi pensieri..." rows="3" class="form-input"></textarea>
+                <button class="save-btn" (click)="addNote()" [disabled]="!newTitle || !newContent">
+                  Salva Nota
+                </button>
+              </div>
+            }
+
+            <div class="notes-grid">
+              @for (note of notes; track note.id) {
+                <app-note-card [note]="note" (onDelete)="deleteNote($event)"></app-note-card>
+              } @empty {
+                <div class="empty-notes">
+                  <p>Non ci sono note per oggi.</p>
+                  <p class="sub">Clicca su "Aggiungi Nota" per iniziare.</p>
+                </div>
+              }
+            </div>
+          </section>
         </div>
       </main>
     </div>
@@ -181,38 +214,190 @@ import { CalendarComponent } from '../../components/calendar/calendar.component'
     }
 
     .content-body {
-      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 30px;
+      padding-bottom: 40px;
+    }
+
+    /* Notes Section Styles */
+    .notes-section {
       display: flex;
       flex-direction: column;
       gap: 20px;
     }
 
-    .quick-actions {
-      text-align: center;
-      padding: 20px;
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
     }
 
-    .hint {
+    .section-header h2 {
+      font-size: 1.3rem;
+      font-weight: 800;
+      color: var(--text-color);
+      margin: 0;
+    }
+
+    .add-btn {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--header-bg);
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 12px;
+      font-weight: 700;
       font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .add-btn.active {
+      background-color: #ef4444;
+    }
+
+    .note-form {
+      background: white;
+      padding: 20px;
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid #eee;
+      border-radius: 12px;
+      font-family: inherit;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-input:focus {
+      border-color: var(--header-bg);
+    }
+
+    .title-input {
+      font-weight: 700;
+    }
+
+    .save-btn {
+      background-color: var(--text-color);
+      color: white;
+      border: none;
+      padding: 12px;
+      border-radius: 12px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .save-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .notes-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 15px;
+    }
+
+    .empty-notes {
+      text-align: center;
+      padding: 40px 20px;
+      background: rgba(0,0,0,0.02);
+      border-radius: 20px;
+      border: 2px dashed rgba(0,0,0,0.05);
+    }
+
+    .empty-notes p {
+      margin: 0;
+      font-weight: 700;
       color: var(--text-color);
       opacity: 0.6;
+    }
+
+    .empty-notes .sub {
+      font-size: 0.85rem;
       font-weight: 600;
+      margin-top: 5px;
+    }
+
+    .card-animation {
+      animation: slideDown 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes slideDown {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     @keyframes fadeIn {
       from { opacity: 0; }
       to { opacity: 1; }
     }
+
+    @media (min-width: 768px) {
+      .notes-grid {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
   `]
 })
-export class MainComponent {
+export class MainComponent implements OnInit {
+  private storage = inject(StorageService);
+
   readonly menuIcon = Menu;
   readonly closeIcon = X;
   readonly backIcon = ArrowLeft;
+  readonly plusIcon = Plus;
 
   isSidebarOpen = false;
+  showForm = false;
+  notes: Note[] = [];
+  
+  newTitle = '';
+  newContent = '';
+  colors = ['#FFD1DC', '#D1EAFF', '#D1FFD7', '#FFF4D1', '#E8D1FF'];
+
+  ngOnInit() {
+    this.notes = this.storage.getNotes();
+  }
 
   toggleSidebar() {
     this.isSidebarOpen = !this.isSidebarOpen;
+  }
+
+  addNote() {
+    if (!this.newTitle.trim() || !this.newContent.trim()) return;
+
+    const newNote: Note = {
+      id: Date.now().toString(),
+      title: this.newTitle,
+      content: this.newContent,
+      date: Date.now(),
+      color: this.colors[Math.floor(Math.random() * this.colors.length)]
+    };
+
+    this.notes = [newNote, ...this.notes];
+    this.storage.saveNotes(this.notes);
+    
+    this.newTitle = '';
+    this.newContent = '';
+    this.showForm = false;
+  }
+
+  deleteNote(id: string) {
+    this.notes = this.notes.filter(n => n.id !== id);
+    this.storage.saveNotes(this.notes);
   }
 }
