@@ -33,13 +33,11 @@ import { LucideAngularModule, ArrowLeft, Menu, X } from 'lucide-angular';
 
       <!-- Main Content -->
       <main class="main-content">
-        <header>
+        <header class="styled-header">
           <button class="menu-trigger" (click)="toggleSidebar()">
-            <div class="circle-btn">
-              <lucide-icon [name]="menuIcon" size="24"></lucide-icon>
-            </div>
+            <lucide-icon [name]="menuIcon" size="24"></lucide-icon>
           </button>
-          <h1>Area Operativa</h1>
+          <h1 class="title">Area Operativa</h1>
         </header>
 
         <div class="content-body">
@@ -150,42 +148,34 @@ import { LucideAngularModule, ArrowLeft, Menu, X } from 'lucide-angular';
       padding: 20px;
     }
 
-    header {
+    .styled-header {
+      background-color: var(--header-bg);
+      border-radius: 50px;
       display: flex;
       align-items: center;
-      gap: 20px;
-      margin-bottom: 30px;
+      padding: 10px 20px;
+      color: var(--header-text);
+      margin-bottom: 40px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     .menu-trigger {
       background: none;
       border: none;
+      color: inherit;
       cursor: pointer;
+      display: flex;
+      align-items: center;
       padding: 0;
     }
 
-    .circle-btn {
-      width: 50px;
-      height: 50px;
-      border-radius: 50%;
-      background-color: var(--header-bg);
-      color: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-      transition: transform 0.2s;
-    }
-
-    .circle-btn:active {
-      transform: scale(0.9);
-    }
-
-    h1 {
-      font-size: 1.6rem;
+    .title {
+      flex: 1;
+      text-align: center;
+      font-size: 1.4rem;
       font-weight: 800;
-      color: var(--text-color);
       margin: 0;
+      margin-right: 24px; /* Bilancia l'icona del menu a sinistra */
     }
 
     .content-body {
