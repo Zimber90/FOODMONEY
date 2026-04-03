@@ -19,9 +19,7 @@ import { CalendarComponent } from '../../components/calendar/calendar.component'
           </button>
         </div>
         <nav class="sidebar-nav">
-          <a class="nav-link active">Dashboard</a>
-          <a class="nav-link">Calendario</a>
-          <a class="nav-link">Note</a>
+          <a class="nav-link" routerLink="/settings">Impostazioni</a>
           <div class="divider"></div>
           <a class="nav-link" routerLink="/">Torna alla Home</a>
         </nav>
@@ -118,7 +116,7 @@ import { CalendarComponent } from '../../components/calendar/calendar.component'
       cursor: pointer;
     }
 
-    .nav-link:hover, .nav-link.active {
+    .nav-link:hover {
       background-color: rgba(255,255,255,0.15);
       color: white;
     }
