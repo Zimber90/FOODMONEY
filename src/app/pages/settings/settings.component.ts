@@ -99,6 +99,13 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
       padding-left: 10px;
     }
 
+    .setting-item {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      cursor: pointer;
+    }
+
     .setting-item span {
       font-size: 1.1rem;
       font-weight: 700;
@@ -110,6 +117,7 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
       width: 35px;
       height: 35px;
       border-radius: 50%;
+      flex-shrink: 0;
     }
 
     .circle.blue { background-color: #5d7a99; }
@@ -118,6 +126,7 @@ import { ThemeService, ThemeType } from '../../services/theme.service';
     .circle.purple { background-color: #c596c5; }
 
     .theme-dropdown {
+      margin-top: 15px;
       margin-left: 10px;
       margin-right: 10px;
       border: 3px solid var(--border-color);
