@@ -46,22 +46,23 @@ import { Note } from '../../models/note.model';
 
         <div class="content-body">
           <section class="calendar-section">
-            <app-calendar></app-calendar>
+            <app-calendar [notes]="allNotes" (onDaySelect)="filterByDay($event)"></app-calendar>
           </section>
           
           <section class="notes-section">
-            <button class="add-btn" (click)="openForm()">
-              <lucide-icon [name]="plusIcon" size="20"></lucide-icon>
-              Aggiungi Nota
-            </button>
+            <div class="section-header">
+              <h2>{{ selectedDate ? 'Note del ' + (selectedDate | date:'dd/MM/yyyy') : 'Tutte le Note' }}</h2>
+              <button class="add-btn-small" (click)="openForm()">
+                <lucide-icon [name]="plusIcon" size="18"></lucide-icon>
+              </button>
+            </div>
 
             <div class="notes-grid">
-              @for (note of notes; track note.id) {
+              @for (note of filteredNotes; track note.id) {
                 <app-note-card [note]="note" (onDelete)="deleteNote($event)"></app-note-card>
               } @empty {
                 <div class="empty-notes">
-                  <p>Non ci sono note per oggi.</p>
-                  <p class="sub">Clicca su "Aggiungi Nota" per iniziare.</p>
+                  <p>Nessun ordine trovato per questo periodo.</p>
                 </div>
               }
             </div>
@@ -143,7 +144,33 @@ import { Note } from '../../models/note.model';
 
     .content-body { display: flex; flex-direction: column; gap: 30px; padding-bottom: 40px; }
 
-    .add-btn { display: flex; align-items: center; justify-content: center; gap: 10px; background-color: var(--header-bg); color: white; border: none; padding: 14px; border-radius: 16px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s; width: 100%; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 15px;
+    }
+
+    .section-header h2 {
+      font-size: 1.2rem;
+      font-weight: 800;
+      color: var(--text-color);
+      margin: 0;
+    }
+
+    .add-btn-small {
+      background-color: var(--header-bg);
+      color: white;
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
 
     /* Modal Styles */
     .modal-overlay {
@@ -235,7 +262,6 @@ import { Note } from '../../models/note.model';
     .notes-grid { display: grid; grid-template-columns: 1fr; gap: 15px; }
     .empty-notes { text-align: center; padding: 40px 20px; background: rgba(0,0,0,0.02); border-radius: 20px; border: 2px dashed rgba(0,0,0,0.05); }
     .empty-notes p { margin: 0; font-weight: 700; color: var(--text-color); opacity: 0.6; }
-    .empty-notes .sub { font-size: 0.85rem; font-weight: 600; margin-top: 5px; }
 
     @keyframes popIn {
       from { opacity: 0; transform: scale(0.9); }
@@ -257,7 +283,10 @@ export class MainComponent implements OnInit {
 
   isSidebarOpen = false;
   showForm = false;
-  notes: Note[] = [];
+  
+  allNotes: Note[] = [];
+  filteredNotes: Note[] = [];
+  selectedDate: string | null = null;
   
   restaurantName = '';
   visitDate = '';
@@ -266,7 +295,25 @@ export class MainComponent implements OnInit {
   colors = ['#FFD1DC', '#D1EAFF', '#D1FFD7', '#FFF4D1', '#E8D1FF'];
 
   ngOnInit() {
-    this.notes = this.storage.getNotes();
+    this.loadNotes();
+  }
+
+  loadNotes() {
+    this.allNotes = this.storage.getNotes();
+    this.applyFilter();
+  }
+
+  applyFilter() {
+    if (this.selectedDate) {
+      this.filteredNotes = this.allNotes.filter(n => n.visitDate === this.selectedDate);
+    } else {
+      this.filteredNotes = [...this.allNotes];
+    }
+  }
+
+  filterByDay(date: string | null) {
+    this.selectedDate = date;
+    this.applyFilter();
   }
 
   toggleSidebar() {
@@ -275,8 +322,8 @@ export class MainComponent implements OnInit {
 
   openForm() {
     this.showForm = true;
-    // Imposta la data di oggi come predefinita nel formato YYYY-MM-DD richiesto dall'input date
-    this.visitDate = new Date().toISOString().split('T')[0];
+    // Se c'è un giorno selezionato nel calendario, usa quello come predefinito
+    this.visitDate = this.selectedDate || new Date().toISOString().split('T')[0];
   }
 
   closeForm() {
@@ -298,13 +345,15 @@ export class MainComponent implements OnInit {
       color: this.colors[Math.floor(Math.random() * this.colors.length)]
     };
 
-    this.notes = [newNote, ...this.notes];
-    this.storage.saveNotes(this.notes);
+    this.allNotes = [newNote, ...this.allNotes];
+    this.storage.saveNotes(this.allNotes);
+    this.applyFilter();
     this.closeForm();
   }
 
   deleteNote(id: string) {
-    this.notes = this.notes.filter(n => n.id !== id);
-    this.storage.saveNotes(this.notes);
+    this.allNotes = this.allNotes.filter(n => n.id !== id);
+    this.storage.saveNotes(this.allNotes);
+    this.applyFilter();
   }
 }

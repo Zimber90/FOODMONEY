@@ -1,7 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Input, Output, EventEmitter } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CalendarSettingsService } from '../../services/calendar-settings.service';
 import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
+import { Note } from '../../models/note.model';
 
 @Component({
   selector: 'app-calendar',
@@ -27,12 +28,21 @@ import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
         <div *ngFor="let day of daysInMonth" 
              class="day" 
              [class.today]="isToday(day)"
-             [style.borderRadius]="settings.borderRadius"
-             [style.backgroundColor]="isToday(day) ? settings.highlightColor : 'transparent'"
-             [style.color]="isToday(day) ? '#fff' : 'var(--text-color)'">
-          {{ day }}
+             [class.selected]="isSelected(day)"
+             (click)="selectDay(day)"
+             [style.borderRadius]="settings.borderRadius">
+          <span class="day-number">{{ day }}</span>
+          
+          <!-- Indicatore nota (cerchio) -->
+          @if (hasNote(day)) {
+            <div class="note-indicator" [style.backgroundColor]="getNoteColor(day)"></div>
+          }
         </div>
       </div>
+      
+      @if (selectedDay) {
+        <button class="reset-filter" (click)="resetFilter()">Mostra tutte le note</button>
+      }
     </div>
   `,
   styles: [`
@@ -92,12 +102,50 @@ import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
     .day {
       aspect-ratio: 1;
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.2s;
       color: var(--text-color);
+      position: relative;
+      border: 2px solid transparent;
+    }
+
+    .day:hover {
+      background-color: rgba(0,0,0,0.05);
+    }
+
+    .selected {
+      border-color: var(--header-bg);
+    }
+
+    .today .day-number {
+      color: var(--header-bg);
+      font-weight: 800;
+      text-decoration: underline;
+    }
+
+    .note-indicator {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      position: absolute;
+      bottom: 4px;
+    }
+
+    .reset-filter {
+      width: 100%;
+      margin-top: 15px;
+      padding: 8px;
+      background: none;
+      border: 1px solid var(--border-color);
+      border-radius: 10px;
+      color: var(--text-color);
+      font-size: 0.8rem;
+      font-weight: 700;
+      cursor: pointer;
     }
 
     /* Font Sizes */
@@ -105,22 +153,23 @@ import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
     .medium .day { font-size: 1rem; }
     .large .day { font-size: 1.2rem; }
 
-    .today {
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-    }
-
     .empty {
       cursor: default;
     }
+    .empty:hover { background: none; }
   `]
 })
 export class CalendarComponent implements OnInit {
   private calendarService = inject(CalendarSettingsService);
   
+  @Input() notes: Note[] = [];
+  @Output() onDaySelect = new EventEmitter<string | null>();
+
   readonly prevIcon = ChevronLeft;
   readonly nextIcon = ChevronRight;
 
   currentDate = new Date();
+  selectedDay: string | null = null;
   weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
   monthNames = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -167,5 +216,40 @@ export class CalendarComponent implements OnInit {
       this.currentDate.getMonth() === today.getMonth() &&
       this.currentDate.getFullYear() === today.getFullYear()
     );
+  }
+
+  isSelected(day: number): boolean {
+    if (!this.selectedDay) return false;
+    const dateStr = this.getDateString(day);
+    return this.selectedDay === dateStr;
+  }
+
+  getDateString(day: number): string {
+    const year = this.currentDate.getFullYear();
+    const month = (this.currentDate.getMonth() + 1).toString().padStart(2, '0');
+    const dayStr = day.toString().padStart(2, '0');
+    return `${year}-${month}-${dayStr}`;
+  }
+
+  hasNote(day: number): boolean {
+    const dateStr = this.getDateString(day);
+    return this.notes.some(n => n.visitDate === dateStr);
+  }
+
+  getNoteColor(day: number): string {
+    const dateStr = this.getDateString(day);
+    const note = this.notes.find(n => n.visitDate === dateStr);
+    return note ? note.color : '#5d7a99';
+  }
+
+  selectDay(day: number) {
+    const dateStr = this.getDateString(day);
+    this.selectedDay = dateStr;
+    this.onDaySelect.emit(dateStr);
+  }
+
+  resetFilter() {
+    this.selectedDay = null;
+    this.onDaySelect.emit(null);
   }
 }
