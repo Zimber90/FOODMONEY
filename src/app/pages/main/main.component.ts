@@ -50,7 +50,7 @@ import { Note } from '../../models/note.model';
           </section>
           
           <section class="notes-section">
-            <button class="add-btn" (click)="showForm = true">
+            <button class="add-btn" (click)="openForm()">
               <lucide-icon [name]="plusIcon" size="20"></lucide-icon>
               Aggiungi Nota
             </button>
@@ -81,14 +81,14 @@ import { Note } from '../../models/note.model';
               <div class="input-wrapper">
                 <div class="label-input">
                   <span class="label">Data:</span>
-                  <input [(ngModel)]="visitDate" type="text" class="styled-input">
+                  <input [(ngModel)]="visitDate" type="date" class="styled-input">
                 </div>
               </div>
 
               <div class="input-wrapper">
                 <div class="label-input">
                   <span class="label">€</span>
-                  <input [(ngModel)]="amount" type="text" class="styled-input">
+                  <input [(ngModel)]="amount" type="number" placeholder="0.00" class="styled-input">
                 </div>
               </div>
             </div>
@@ -192,6 +192,7 @@ import { Note } from '../../models/note.model';
       font-size: 1rem;
       outline: none;
       color: #333;
+      background: white;
     }
 
     .styled-input.bold {
@@ -272,6 +273,12 @@ export class MainComponent implements OnInit {
     this.isSidebarOpen = !this.isSidebarOpen;
   }
 
+  openForm() {
+    this.showForm = true;
+    // Imposta la data di oggi come predefinita nel formato YYYY-MM-DD richiesto dall'input date
+    this.visitDate = new Date().toISOString().split('T')[0];
+  }
+
   closeForm() {
     this.showForm = false;
     this.restaurantName = '';
@@ -285,7 +292,7 @@ export class MainComponent implements OnInit {
     const newNote: Note = {
       id: Date.now().toString(),
       restaurantName: this.restaurantName,
-      visitDate: this.visitDate || new Date().toLocaleDateString(),
+      visitDate: this.visitDate,
       amount: this.amount || '0',
       timestamp: Date.now(),
       color: this.colors[Math.floor(Math.random() * this.colors.length)]
