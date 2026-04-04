@@ -22,8 +22,9 @@ import { Note } from '../../models/note.model';
         @for (note of allNotes; track note.id) {
           <div class="history-item" [style.borderLeftColor]="note.color">
             <div class="item-info">
-              <h3>{{ note.title }}</h3>
-              <p>{{ note.date | date:'dd MMM yyyy, HH:mm' }}</p>
+              <h3>{{ note.restaurantName }}</h3>
+              <p>{{ note.timestamp | date:'dd MMM yyyy, HH:mm' }}</p>
+              <p class="amount-small">€ {{ note.amount }}</p>
             </div>
             <lucide-icon [name]="historyIcon" size="18" class="icon-dim"></lucide-icon>
           </div>
@@ -101,6 +102,7 @@ import { Note } from '../../models/note.model';
       font-size: 1rem;
       font-weight: 700;
       color: var(--text-color);
+      text-transform: uppercase;
     }
 
     .item-info p {
@@ -108,6 +110,12 @@ import { Note } from '../../models/note.model';
       font-size: 0.8rem;
       opacity: 0.6;
       color: var(--text-color);
+    }
+
+    .amount-small {
+      font-weight: 700;
+      margin-top: 4px !important;
+      opacity: 1 !important;
     }
 
     .icon-dim {
