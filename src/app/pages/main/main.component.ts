@@ -50,7 +50,6 @@ import { Note } from '../../models/note.model';
           
           <section class="notes-section">
             <div class="section-header">
-              <h2>Le Mie Note</h2>
               <button class="add-btn" (click)="showForm = !showForm" [class.active]="showForm">
                 <lucide-icon [name]="plusIcon" size="20"></lucide-icon>
                 {{ showForm ? 'Chiudi' : 'Aggiungi Nota' }}
@@ -229,30 +228,25 @@ import { Note } from '../../models/note.model';
 
     .section-header {
       display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .section-header h2 {
-      font-size: 1.3rem;
-      font-weight: 800;
-      color: var(--text-color);
-      margin: 0;
+      width: 100%;
     }
 
     .add-btn {
       display: flex;
       align-items: center;
-      gap: 8px;
+      justify-content: center;
+      gap: 10px;
       background-color: var(--header-bg);
       color: white;
       border: none;
-      padding: 8px 16px;
-      border-radius: 12px;
+      padding: 14px;
+      border-radius: 16px;
       font-weight: 700;
-      font-size: 0.9rem;
+      font-size: 1rem;
       cursor: pointer;
       transition: all 0.2s;
+      width: 100%;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.05);
     }
 
     .add-btn.active {
