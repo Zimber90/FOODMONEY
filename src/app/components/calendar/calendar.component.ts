@@ -1,8 +1,7 @@
-import { Component, inject, OnInit, Input, Output, EventEmitter } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CalendarSettingsService } from '../../services/calendar-settings.service';
 import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
-import { Note } from '../../models/note.model';
 
 @Component({
   selector: 'app-calendar',
@@ -28,17 +27,12 @@ import { Note } from '../../models/note.model';
         <div *ngFor="let day of daysInMonth" 
              class="day" 
              [class.today]="isToday(day)"
-             [class.selected]="isSelected(day)"
-             [class.has-note]="hasNote(day)"
-             [style.backgroundColor]="hasNote(day) ? getNoteColor(day) : 'transparent'"
-             (click)="selectDay(day)">
-          <span class="day-number">{{ day }}</span>
+             [style.borderRadius]="settings.borderRadius"
+             [style.backgroundColor]="isToday(day) ? settings.highlightColor : 'transparent'"
+             [style.color]="isToday(day) ? '#fff' : 'var(--text-color)'">
+          {{ day }}
         </div>
       </div>
-      
-      @if (selectedDay) {
-        <button class="reset-filter" (click)="resetFilter()">Mostra tutte le note</button>
-      }
     </div>
   `,
   styles: [`
@@ -82,7 +76,7 @@ import { Note } from '../../models/note.model';
     .calendar-grid {
       display: grid;
       grid-template-columns: repeat(7, 1fr);
-      gap: 8px;
+      gap: 5px;
       text-align: center;
     }
 
@@ -100,55 +94,10 @@ import { Note } from '../../models/note.model';
       display: flex;
       align-items: center;
       justify-content: center;
-      font-weight: 700;
+      font-weight: 600;
       cursor: pointer;
-      transition: all 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      transition: all 0.2s;
       color: var(--text-color);
-      position: relative;
-      border-radius: 50%;
-      border: 2px solid transparent;
-    }
-
-    .day:hover {
-      background-color: rgba(0,0,0,0.05);
-    }
-
-    .day.has-note {
-      color: #1a1a1a; /* Testo scuro per contrasto sui colori pastello */
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-
-    .day.selected {
-      border-color: var(--header-bg);
-      transform: scale(1.1);
-    }
-
-    .day.today:not(.has-note) {
-      color: var(--header-bg);
-      text-decoration: underline;
-      font-weight: 900;
-    }
-
-    .day.today.has-note {
-      border: 2px solid var(--header-bg);
-    }
-
-    .day-number {
-      z-index: 2;
-    }
-
-    .reset-filter {
-      width: 100%;
-      margin-top: 15px;
-      padding: 10px;
-      background: var(--header-bg);
-      border: none;
-      border-radius: 12px;
-      color: white;
-      font-size: 0.85rem;
-      font-weight: 700;
-      cursor: pointer;
-      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
     /* Font Sizes */
@@ -156,23 +105,22 @@ import { Note } from '../../models/note.model';
     .medium .day { font-size: 1rem; }
     .large .day { font-size: 1.2rem; }
 
+    .today {
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
     .empty {
       cursor: default;
     }
-    .empty:hover { background: none; }
   `]
 })
 export class CalendarComponent implements OnInit {
   private calendarService = inject(CalendarSettingsService);
   
-  @Input() notes: Note[] = [];
-  @Output() onDaySelect = new EventEmitter<string | null>();
-
   readonly prevIcon = ChevronLeft;
   readonly nextIcon = ChevronRight;
 
   currentDate = new Date();
-  selectedDay: string | null = null;
   weekDays = ['Lun', 'Mar', 'Mer', 'Gio', 'Ven', 'Sab', 'Dom'];
   monthNames = [
     'Gennaio', 'Febbraio', 'Marzo', 'Aprile', 'Maggio', 'Giugno',
@@ -219,40 +167,5 @@ export class CalendarComponent implements OnInit {
       this.currentDate.getMonth() === today.getMonth() &&
       this.currentDate.getFullYear() === today.getFullYear()
     );
-  }
-
-  isSelected(day: number): boolean {
-    if (!this.selectedDay) return false;
-    const dateStr = this.getDateString(day);
-    return this.selectedDay === dateStr;
-  }
-
-  getDateString(day: number): string {
-    const year = this.currentDate.getFullYear();
-    const month = (this.currentDate.getMonth() + 1).toString().padStart(2, '0');
-    const dayStr = day.toString().padStart(2, '0');
-    return `${year}-${month}-${dayStr}`;
-  }
-
-  hasNote(day: number): boolean {
-    const dateStr = this.getDateString(day);
-    return this.notes.some(n => n.visitDate === dateStr);
-  }
-
-  getNoteColor(day: number): string {
-    const dateStr = this.getDateString(day);
-    const note = this.notes.find(n => n.visitDate === dateStr);
-    return note ? note.color : 'transparent';
-  }
-
-  selectDay(day: number) {
-    const dateStr = this.getDateString(day);
-    this.selectedDay = dateStr;
-    this.onDaySelect.emit(dateStr);
-  }
-
-  resetFilter() {
-    this.selectedDay = null;
-    this.onDaySelect.emit(null);
   }
 }
