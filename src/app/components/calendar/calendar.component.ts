@@ -1,7 +1,8 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, Input, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { CalendarSettingsService } from '../../services/calendar-settings.service';
 import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
+import { Note } from '../../models/note.model';
 
 @Component({
   selector: 'app-calendar',
@@ -27,9 +28,10 @@ import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
         <div *ngFor="let day of daysInMonth" 
              class="day" 
              [class.today]="isToday(day)"
-             [style.borderRadius]="settings.borderRadius"
-             [style.backgroundColor]="isToday(day) ? settings.highlightColor : 'transparent'"
-             [style.color]="isToday(day) ? '#fff' : 'var(--text-color)'">
+             [class.has-note]="getDayNoteColor(day)"
+             [style.borderRadius]="isToday(day) ? settings.borderRadius : '50%'"
+             [style.backgroundColor]="isToday(day) ? settings.highlightColor : getDayNoteColor(day)"
+             [style.color]="(isToday(day) || getDayNoteColor(day)) ? '#fff' : 'var(--text-color)'">
           {{ day }}
         </div>
       </div>
@@ -98,6 +100,8 @@ import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
       cursor: pointer;
       transition: all 0.2s;
       color: var(--text-color);
+      position: relative;
+      z-index: 1;
     }
 
     /* Font Sizes */
@@ -109,12 +113,18 @@ import { LucideAngularModule, ChevronLeft, ChevronRight } from 'lucide-angular';
       box-shadow: 0 4px 10px rgba(0,0,0,0.1);
     }
 
+    .has-note {
+      /* Il cerchio è gestito dal background-color dinamico e border-radius 50% */
+    }
+
     .empty {
       cursor: default;
     }
   `]
 })
-export class CalendarComponent implements OnInit {
+export class CalendarComponent implements OnInit, OnChanges {
+  @Input() notes: Note[] = [];
+  
   private calendarService = inject(CalendarSettingsService);
   
   readonly prevIcon = ChevronLeft;
@@ -136,6 +146,12 @@ export class CalendarComponent implements OnInit {
 
   ngOnInit() {
     this.generateCalendar();
+  }
+
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['notes']) {
+      // Ricarica se necessario, ma il template reagisce già
+    }
   }
 
   generateCalendar() {
@@ -167,5 +183,17 @@ export class CalendarComponent implements OnInit {
       this.currentDate.getMonth() === today.getMonth() &&
       this.currentDate.getFullYear() === today.getFullYear()
     );
+  }
+
+  getDayNoteColor(day: number): string | null {
+    if (!this.notes) return null;
+    
+    const year = this.currentDate.getFullYear();
+    const month = (this.currentDate.getMonth() + 1).toString().padStart(2, '0');
+    const dayStr = day.toString().padStart(2, '0');
+    const dateKey = `${year}-${month}-${dayStr}`;
+
+    const note = this.notes.find(n => n.visitDate === dateKey);
+    return note ? note.color : null;
   }
 }

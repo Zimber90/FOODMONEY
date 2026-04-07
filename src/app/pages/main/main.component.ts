@@ -46,7 +46,7 @@ import { Note } from '../../models/note.model';
 
         <div class="content-body">
           <section class="calendar-section">
-            <app-calendar></app-calendar>
+            <app-calendar [notes]="notes"></app-calendar>
           </section>
           
           <section class="notes-section">
@@ -275,7 +275,6 @@ export class MainComponent implements OnInit {
 
   openForm() {
     this.showForm = true;
-    // Imposta la data di oggi come predefinita nel formato YYYY-MM-DD richiesto dall'input date
     this.visitDate = new Date().toISOString().split('T')[0];
   }
 
