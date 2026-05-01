@@ -7,7 +7,7 @@ echo  Script Push Automatico per GitHub
 echo ===========================================
 echo.
 
-
+C:\Users\Riky>
 C:\Users\Riky>cd C:\Users\Riky\dyad-apps\FoodMoney
 
 :: Aggiorna la lista dei file
